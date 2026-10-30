@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import CategoryFilter from './components/CategoryFilter.jsx'
 import ExpenseForm from './components/ExpenseForm.jsx'
 import ExpenseList from './components/ExpenseList.jsx'
-import { calculateTotal, formatCurrency } from './expenseUtils.js'
+import { calculateTotal, formatCurrency, validateExpense } from './expenseUtils.js'
 
 const initialExpenses = []
 
@@ -10,6 +10,10 @@ const initialExpenses = []
 export default function App() {
   const [expenses, setExpenses] = useState(initialExpenses)
   const [category, setCategory] = useState('All')
+  const [title, setTitle] = useState('')
+  const [amount, setAmount] = useState('')
+  const [expenseCategory, setExpenseCategory] = useState('Food')
+  const [errors, setErrors] = useState({})
   const visibleExpenses = useMemo(
     () => category === 'All' ? expenses : expenses.filter((expense) => expense.category === category),
     [category, expenses],
@@ -17,6 +21,22 @@ export default function App() {
 
   function addExpense(expense) {
     setExpenses((current) => [...current, { ...expense, id: crypto.randomUUID() }])
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault()
+    const nextErrors = validateExpense({ title, amount, category: expenseCategory })
+    setErrors(nextErrors)
+    if (Object.keys(nextErrors).length > 0) return
+
+    addExpense({
+      title: title.trim(),
+      amount: Number(amount),
+      category: expenseCategory,
+    })
+    setTitle('')
+    setAmount('')
+    setExpenseCategory('Food')
   }
 
   function deleteExpense(id) {
@@ -60,7 +80,16 @@ export default function App() {
           </div>
           <span className="heading-number">01</span>
         </div>
-        <ExpenseForm onAddExpense={addExpense} />
+        <ExpenseForm
+          title={title}
+          amount={amount}
+          category={expenseCategory}
+          errors={errors}
+          onTitleChange={setTitle}
+          onAmountChange={setAmount}
+          onCategoryChange={setExpenseCategory}
+          onSubmit={handleSubmit}
+        />
       </section>
 
       <section className="ledger-section">

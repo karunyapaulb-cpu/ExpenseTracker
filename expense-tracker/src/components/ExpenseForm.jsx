@@ -1,38 +1,25 @@
-import { useState } from 'react'
-import { CATEGORIES, validateExpense } from '../expenseUtils.js'
+import { CATEGORIES } from '../expenseUtils.js'
 
-/** Props: onAddExpense receives a validated expense; local state holds form values and errors. */
-export default function ExpenseForm({ onAddExpense }) {
-  const [title, setTitle] = useState('')
-  const [amount, setAmount] = useState('')
-  const [category, setCategory] = useState(CATEGORIES[0])
-  const [errors, setErrors] = useState({})
-
-  function handleSubmit(event) {
-    event.preventDefault()
-    const nextErrors = validateExpense({ title, amount, category })
-    setErrors(nextErrors)
-    if (Object.keys(nextErrors).length > 0) return
-
-    onAddExpense({
-      title: title.trim(),
-      amount: Number(amount),
-      category,
-    })
-    setTitle('')
-    setAmount('')
-    setCategory(CATEGORIES[0])
-  }
-
+/** Props provide the controlled form values, errors, change handlers, and submit callback; state lives in App. */
+export default function ExpenseForm({
+  title,
+  amount,
+  category,
+  errors,
+  onTitleChange,
+  onAmountChange,
+  onCategoryChange,
+  onSubmit,
+}) {
   return (
-    <form className="expense-form" onSubmit={handleSubmit} noValidate>
+    <form className="expense-form" onSubmit={onSubmit} noValidate>
       <div className="field">
         <label htmlFor="expense-title">Expense name</label>
         <input
           id="expense-title"
           data-cy="title"
           value={title}
-          onChange={(event) => setTitle(event.target.value)}
+          onChange={(event) => onTitleChange(event.target.value)}
           placeholder="e.g. Coffee with Sam"
           aria-invalid={Boolean(errors.title)}
           aria-describedby={errors.title ? 'title-error' : undefined}
@@ -51,7 +38,7 @@ export default function ExpenseForm({ onAddExpense }) {
             max="100000"
             step="any"
             value={amount}
-            onChange={(event) => setAmount(event.target.value)}
+            onChange={(event) => onAmountChange(event.target.value)}
             placeholder="0.00"
             aria-invalid={Boolean(errors.amount)}
             aria-describedby={errors.amount ? 'amount-error' : undefined}
@@ -65,7 +52,7 @@ export default function ExpenseForm({ onAddExpense }) {
           id="expense-category"
           data-cy="category"
           value={category}
-          onChange={(event) => setCategory(event.target.value)}
+          onChange={(event) => onCategoryChange(event.target.value)}
         >
           {CATEGORIES.map((item) => <option key={item}>{item}</option>)}
         </select>
